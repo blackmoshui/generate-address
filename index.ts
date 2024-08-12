@@ -54,18 +54,19 @@ async function generateBitcoinAddress(mnemonic: string, addressType: any, hdPath
     return address;
 }
 
-// TODO: Support TON
+// TODO: support TON address
 // async function generateTonAddress(mnemonic: string) {
 //     const tonwebInstance = new TonWeb();
 
 //     const seed = bip39.mnemonicToSeedSync(mnemonic);
 //     const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0,32));
+//     console.log(keyPair.secretKey);
 //     // Create a wallet using the public key as Uint8Array
 //     const publicKey = keyPair.publicKey;
 //     const wallet = tonwebInstance.wallet.create({publicKey});
 
 //     // Get the wallet address
-//     const walletAddress = (await wallet.getAddress()).toString(true, true, true);
+//     const walletAddress = (await wallet.getAddress()).toString(true, false, false);
 //     return walletAddress;
 // }
 
@@ -91,7 +92,7 @@ async function generateAddressesAndSave(mnemonic:string){
     const bitcoinTaprootAddress = await generateBitcoinAddress(mnemonic, AddressType.P2TR);
     const bitcoinNativeAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/84'/0'/0'/0");
     const celestiaAddress = await generateCosmosAddress(mnemonic);
-    const atomAddress = await generateCosmosAddress(mnemonic, "cosmoshub-4");
+    const atomAddress = await generateCosmosAddress(mnemonic, "cosmos");
     const solanaAddress = await generateSolanaAddress(mnemonic);
 
     const data = {
@@ -101,7 +102,7 @@ async function generateAddressesAndSave(mnemonic:string){
       "native": bitcoinNativeAddress,
       "celestia": celestiaAddress,
       "atom": atomAddress,
-      "solana": solanaAddress,
+      "solana": solanaAddress
     };
 
     const fileName = `${evmAddress}.json`;

@@ -86,18 +86,21 @@ function generateBitcoinAddress(mnemonic_1, addressType_1) {
         return address;
     });
 }
-// TODO: Support TON
-// async function generateTonAddress(mnemonic: string) {
-//     const tonwebInstance = new TonWeb();
-//     const seed = bip39.mnemonicToSeedSync(mnemonic);
-//     const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0,32));
-//     // Create a wallet using the public key as Uint8Array
-//     const publicKey = keyPair.publicKey;
-//     const wallet = tonwebInstance.wallet.create({publicKey});
-//     // Get the wallet address
-//     const walletAddress = (await wallet.getAddress()).toString(true, true, true);
-//     return walletAddress;
-// }
+function generateTonAddress(mnemonic) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tonwebInstance = new TonWeb();
+        const seed = bip39.mnemonicToSeedSync(mnemonic);
+        // 86d824480f36b9fdcbd27b8ecb34385118e79bf3e1fae1f4af5fe66399e44638
+        const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0, 32));
+        console.log(keyPair.secretKey);
+        // Create a wallet using the public key as Uint8Array
+        const publicKey = keyPair.publicKey;
+        const wallet = tonwebInstance.wallet.create({ publicKey });
+        // Get the wallet address
+        const walletAddress = (yield wallet.getAddress()).toString(true, false, false);
+        return walletAddress;
+    });
+}
 const argv = require('yargs')
     .command('new', 'Generate new wallets')
     .command('regen', 'Regenerate addresses from existing mnemonics')
@@ -118,8 +121,9 @@ function generateAddressesAndSave(mnemonic) {
         const bitcoinTaprootAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2TR);
         const bitcoinNativeAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/84'/0'/0'/0");
         const celestiaAddress = yield generateCosmosAddress(mnemonic);
-        const atomAddress = yield generateCosmosAddress(mnemonic, "cosmoshub-4");
+        const atomAddress = yield generateCosmosAddress(mnemonic, "cosmos");
         const solanaAddress = yield generateSolanaAddress(mnemonic);
+        const tonAddress = yield generateTonAddress(mnemonic);
         const data = {
             "mnemonic": mnemonic,
             "evm": evmAddress,
@@ -128,6 +132,7 @@ function generateAddressesAndSave(mnemonic) {
             "celestia": celestiaAddress,
             "atom": atomAddress,
             "solana": solanaAddress,
+            "ton": tonAddress
         };
         const fileName = `${evmAddress}.json`;
         const filePath = path.join(keysDir, fileName);
