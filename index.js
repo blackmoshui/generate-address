@@ -74,15 +74,15 @@ function generateSolanaAddress(mnemonic_1) {
     });
 }
 // different hdPath and different activeIndexes
-function generateBitcoinAddress(mnemonic_1) {
-    return __awaiter(this, arguments, void 0, function* (mnemonic, hdPath = "m/86'/0'/0'/0/0") {
+function generateBitcoinAddress(mnemonic_1, addressType_1) {
+    return __awaiter(this, arguments, void 0, function* (mnemonic, addressType, hdPath = "m/86'/0'/0'/0") {
         const keyring = new keyring_1.HdKeyring({
             mnemonic: mnemonic,
-            activeIndexes: [0],
-            hdPath: hdPath // Taproot
+            activeIndexes: [0, 1],
+            hdPath: hdPath, // Taproot
         });
         const account = (yield keyring.getAccounts())[0];
-        const address = (0, address_1.publicKeyToAddress)(account, types_1.AddressType.P2TR, network_1.NetworkType.MAINNET);
+        const address = (0, address_1.publicKeyToAddress)(account, addressType, network_1.NetworkType.MAINNET);
         return address;
     });
 }
@@ -115,14 +115,18 @@ if (!fs.existsSync(keysDir)) {
 function generateAddressesAndSave(mnemonic) {
     return __awaiter(this, void 0, void 0, function* () {
         const evmAddress = yield generateEVMAddress(mnemonic);
-        const bitcoinTaprootAddress = yield generateBitcoinAddress(mnemonic);
+        const bitcoinTaprootAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2TR);
+        const bitcoinNativeAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/84'/0'/0'/0");
         const celestiaAddress = yield generateCosmosAddress(mnemonic);
+        const atomAddress = yield generateCosmosAddress(mnemonic, "cosmoshub-4");
         const solanaAddress = yield generateSolanaAddress(mnemonic);
         const data = {
             "mnemonic": mnemonic,
             "evm": evmAddress,
             "taproot": bitcoinTaprootAddress,
+            "native": bitcoinNativeAddress,
             "celestia": celestiaAddress,
+            "atom": atomAddress,
             "solana": solanaAddress,
         };
         const fileName = `${evmAddress}.json`;

@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "build": "yarn && tsc --project tsconfig.json",
-    "new": "node index.js new",
-    "regen": "node index.js regen"
+    "new": "yarn build && node index.js new",
+    "regen": "yarn build && node index.js regen"
   },
   "keywords": [],
   "author": "blackmoshui",

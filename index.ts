@@ -43,14 +43,14 @@ async function generateSolanaAddress(mnemonic: string, derivation_path : string 
 }
 
 // different hdPath and different activeIndexes
-async function generateBitcoinAddress(mnemonic: string, hdPath: string = "m/86'/0'/0'/0/0") {
+async function generateBitcoinAddress(mnemonic: string, addressType: any, hdPath: string = "m/86'/0'/0'/0") {
     const keyring = new HdKeyring({
         mnemonic: mnemonic,
-        activeIndexes: [0],
-        hdPath: hdPath // Taproot
+        activeIndexes: [0,1],
+        hdPath: hdPath, // Taproot
       });
     const account = (await keyring.getAccounts())[0];
-    const address = publicKeyToAddress(account, AddressType.P2TR, NetworkType.MAINNET);
+    const address = publicKeyToAddress(account, addressType, NetworkType.MAINNET);
     return address;
 }
 
@@ -88,15 +88,19 @@ fs.mkdirSync(keysDir);
 
 async function generateAddressesAndSave(mnemonic:string){
     const evmAddress = await generateEVMAddress(mnemonic);
-    const bitcoinTaprootAddress = await generateBitcoinAddress(mnemonic);
+    const bitcoinTaprootAddress = await generateBitcoinAddress(mnemonic, AddressType.P2TR);
+    const bitcoinNativeAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/84'/0'/0'/0");
     const celestiaAddress = await generateCosmosAddress(mnemonic);
+    const atomAddress = await generateCosmosAddress(mnemonic, "cosmoshub-4");
     const solanaAddress = await generateSolanaAddress(mnemonic);
 
     const data = {
       "mnemonic": mnemonic,
       "evm": evmAddress,
       "taproot": bitcoinTaprootAddress,
+      "native": bitcoinNativeAddress,
       "celestia": celestiaAddress,
+      "atom": atomAddress,
       "solana": solanaAddress,
     };
 
