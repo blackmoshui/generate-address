@@ -31,6 +31,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const amino_1 = require("@cosmjs/amino");
 const ethers = require('ethers');
@@ -43,8 +46,9 @@ const address_1 = require("@unisat/wallet-sdk/lib/address");
 const keyring_1 = require("@unisat/wallet-sdk/lib/keyring");
 const types_1 = require("@unisat/wallet-sdk/lib/types");
 const network_1 = require("@unisat/wallet-sdk/lib/network");
-const TonWeb = require("tonweb");
-const nacl = require("tweetnacl");
+const keyring_2 = __importDefault(require("@polkadot/keyring"));
+// const TonWeb = require("tonweb");
+// const nacl = require("tweetnacl");
 function generateMnemonic() {
     const mnemonic = bip39.generateMnemonic();
     return mnemonic;
@@ -86,21 +90,30 @@ function generateBitcoinAddress(mnemonic_1, addressType_1) {
         return address;
     });
 }
-function generateTonAddress(mnemonic) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const tonwebInstance = new TonWeb();
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
-        // 86d824480f36b9fdcbd27b8ecb34385118e79bf3e1fae1f4af5fe66399e44638
-        const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0, 32));
-        console.log(keyPair.secretKey);
-        // Create a wallet using the public key as Uint8Array
-        const publicKey = keyPair.publicKey;
-        const wallet = tonwebInstance.wallet.create({ publicKey });
-        // Get the wallet address
-        const walletAddress = (yield wallet.getAddress()).toString(true, false, false);
-        return walletAddress;
+function generatePolkadotAddress(mnemonic_1) {
+    return __awaiter(this, arguments, void 0, function* (mnemonic, ss58Format = 0) {
+        const kr = new keyring_2.default({
+            type: 'sr25519',
+            ss58Format: ss58Format // different format
+        });
+        const keyPair = kr.createFromUri(mnemonic);
+        console.log(keyPair.address);
+        return keyPair.address;
     });
 }
+// TODO: support TON address
+// async function generateTonAddress(mnemonic: string) {
+//     const tonwebInstance = new TonWeb();
+//     const seed = bip39.mnemonicToSeedSync(mnemonic);
+//     const keyPair = nacl.sign.keyPair.fromSeed(seed.slice(0,32));
+//     console.log(keyPair.secretKey);
+//     // Create a wallet using the public key as Uint8Array
+//     const publicKey = keyPair.publicKey;
+//     const wallet = tonwebInstance.wallet.create({publicKey});
+//     // Get the wallet address
+//     const walletAddress = (await wallet.getAddress()).toString(true, false, false);
+//     return walletAddress;
+// }
 const argv = require('yargs')
     .command('new', 'Generate new wallets')
     .command('regen', 'Regenerate addresses from existing mnemonics')
@@ -123,7 +136,7 @@ function generateAddressesAndSave(mnemonic) {
         const celestiaAddress = yield generateCosmosAddress(mnemonic);
         const atomAddress = yield generateCosmosAddress(mnemonic, "cosmos");
         const solanaAddress = yield generateSolanaAddress(mnemonic);
-        const tonAddress = yield generateTonAddress(mnemonic);
+        const polkadotAddress = yield generatePolkadotAddress(mnemonic);
         const data = {
             "mnemonic": mnemonic,
             "evm": evmAddress,
@@ -132,7 +145,7 @@ function generateAddressesAndSave(mnemonic) {
             "celestia": celestiaAddress,
             "atom": atomAddress,
             "solana": solanaAddress,
-            "ton": tonAddress
+            "dot": polkadotAddress
         };
         const fileName = `${evmAddress}.json`;
         const filePath = path.join(keysDir, fileName);

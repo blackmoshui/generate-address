@@ -11,8 +11,9 @@ import { publicKeyToAddress } from '@unisat/wallet-sdk/lib/address';
 import { HdKeyring } from '@unisat/wallet-sdk/lib/keyring';
 import { AddressType } from '@unisat/wallet-sdk/lib/types';
 import { NetworkType } from '@unisat/wallet-sdk/lib/network';
-const TonWeb = require("tonweb");
-const nacl = require("tweetnacl");
+import Keyring from '@polkadot/keyring';
+// const TonWeb = require("tonweb");
+// const nacl = require("tweetnacl");
 
 function generateMnemonic(){
     const mnemonic = bip39.generateMnemonic();
@@ -52,6 +53,16 @@ async function generateBitcoinAddress(mnemonic: string, addressType: any, hdPath
     const account = (await keyring.getAccounts())[0];
     const address = publicKeyToAddress(account, addressType, NetworkType.MAINNET);
     return address;
+}
+
+async function generatePolkadotAddress(mnemonic:string, ss58Format: number = 0) {
+    const kr = new Keyring({
+      type: 'sr25519',
+      ss58Format: ss58Format // different format
+    });
+
+    const keyPair = kr.createFromUri(mnemonic);
+    return keyPair.address;
 }
 
 // TODO: support TON address
@@ -94,6 +105,7 @@ async function generateAddressesAndSave(mnemonic:string){
     const celestiaAddress = await generateCosmosAddress(mnemonic);
     const atomAddress = await generateCosmosAddress(mnemonic, "cosmos");
     const solanaAddress = await generateSolanaAddress(mnemonic);
+    const polkadotAddress = await generatePolkadotAddress(mnemonic);
 
     const data = {
       "mnemonic": mnemonic,
@@ -102,7 +114,8 @@ async function generateAddressesAndSave(mnemonic:string){
       "native": bitcoinNativeAddress,
       "celestia": celestiaAddress,
       "atom": atomAddress,
-      "solana": solanaAddress
+      "solana": solanaAddress,
+      "dot": polkadotAddress
     };
 
     const fileName = `${evmAddress}.json`;

@@ -13,6 +13,7 @@
   "license": "Apache License 2.0",
   "dependencies": {
     "@cosmjs/amino": "^0.32.4",
+    "@polkadot/keyring": "^13.0.2",
     "@solana/web3.js": "^1.95.0",
     "@unisat/wallet-sdk": "^1.7.1",
     "bip39": "^3.1.0",
