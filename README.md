@@ -36,6 +36,11 @@ nvm install 22
 npm install -g yarn
 ```
 
+4. clone 本项目
+```sh
+git clone https://github.com/blackmoshui/generate-address.git && cd ./generate-address
+```
+
 ## 使用方法
 
 每次运行将批量生成100个地址:
