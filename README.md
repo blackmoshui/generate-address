@@ -43,7 +43,7 @@ git clone https://github.com/blackmoshui/generate-address.git && cd ./generate-a
 
 ## 使用方法
 
-每次运行将批量生成100个地址:
+每次运行将批量生成100个地址,保存在keys文件夹下，evm地址会成为文件名
 ```sh
 yarn new
 ```
