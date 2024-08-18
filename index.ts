@@ -102,6 +102,7 @@ async function generateAddressesAndSave(mnemonic:string){
     const evmAddress = await generateEVMAddress(mnemonic);
     const bitcoinTaprootAddress = await generateBitcoinAddress(mnemonic, AddressType.P2TR);
     const bitcoinNativeAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/84'/0'/0'/0");
+    const RGBLNAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/86/1/0/9/0");
     const celestiaAddress = await generateCosmosAddress(mnemonic);
     const atomAddress = await generateCosmosAddress(mnemonic, "cosmos");
     const solanaAddress = await generateSolanaAddress(mnemonic);
@@ -115,7 +116,8 @@ async function generateAddressesAndSave(mnemonic:string){
       "celestia": celestiaAddress,
       "atom": atomAddress,
       "solana": solanaAddress,
-      "dot": polkadotAddress
+      "dot": polkadotAddress,
+      'rgb-ln': RGBLNAddress
     };
 
     const fileName = `${evmAddress}.json`;

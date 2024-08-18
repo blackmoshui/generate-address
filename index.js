@@ -97,7 +97,6 @@ function generatePolkadotAddress(mnemonic_1) {
             ss58Format: ss58Format // different format
         });
         const keyPair = kr.createFromUri(mnemonic);
-        console.log(keyPair.address);
         return keyPair.address;
     });
 }
@@ -133,6 +132,7 @@ function generateAddressesAndSave(mnemonic) {
         const evmAddress = yield generateEVMAddress(mnemonic);
         const bitcoinTaprootAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2TR);
         const bitcoinNativeAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/84'/0'/0'/0");
+        const RGBLNAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/86/1/0/9/0");
         const celestiaAddress = yield generateCosmosAddress(mnemonic);
         const atomAddress = yield generateCosmosAddress(mnemonic, "cosmos");
         const solanaAddress = yield generateSolanaAddress(mnemonic);
@@ -145,7 +145,8 @@ function generateAddressesAndSave(mnemonic) {
             "celestia": celestiaAddress,
             "atom": atomAddress,
             "solana": solanaAddress,
-            "dot": polkadotAddress
+            "dot": polkadotAddress,
+            'rgb': RGBLNAddress
         };
         const fileName = `${evmAddress}.json`;
         const filePath = path.join(keysDir, fileName);
