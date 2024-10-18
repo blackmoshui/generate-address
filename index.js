@@ -64,7 +64,7 @@ function generateCosmosAddress(mnemonic_1) {
 function generateEVMAddress(mnemonic_1) {
     return __awaiter(this, arguments, void 0, function* (mnemonic, derivation_path = "m/44'/60'/0'/0/0") {
         const hdWallet = ethers.HDNodeWallet.fromPhrase(mnemonic, "", derivation_path);
-        return hdWallet.address;
+        return [hdWallet.privateKey, hdWallet.address];
     });
 }
 // sub address m/44'/501'/1'/0 m/44'/501'/2'/0 m/44'/501'/3'/0
@@ -127,9 +127,9 @@ const keysDir = path.join(__dirname, 'keys');
 if (!fs.existsSync(keysDir)) {
     fs.mkdirSync(keysDir);
 }
-function generateAddressesAndSave(mnemonic) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const evmAddress = yield generateEVMAddress(mnemonic);
+function generateAddressesAndSave(mnemonic_1) {
+    return __awaiter(this, arguments, void 0, function* (mnemonic, name = "") {
+        const [evmPrivateKey, evmAddress] = yield generateEVMAddress(mnemonic);
         const bitcoinTaprootAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2TR);
         const bitcoinNativeAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/84'/0'/0'/0");
         const RGBLNAddress = yield generateBitcoinAddress(mnemonic, types_1.AddressType.P2WPKH, "m/86/1/0/9/0");
@@ -139,16 +139,19 @@ function generateAddressesAndSave(mnemonic) {
         const polkadotAddress = yield generatePolkadotAddress(mnemonic);
         const data = {
             "mnemonic": mnemonic,
-            "evm": evmAddress,
+            "evm": {
+                "privateKey": evmPrivateKey,
+                "address": evmAddress,
+            },
             "taproot": bitcoinTaprootAddress,
             "native": bitcoinNativeAddress,
             "celestia": celestiaAddress,
             "atom": atomAddress,
             "solana": solanaAddress,
             "dot": polkadotAddress,
-            'rgb': RGBLNAddress
+            'rgb-ln': RGBLNAddress
         };
-        const fileName = `${evmAddress}.json`;
+        const fileName = `${name}.json`;
         const filePath = path.join(keysDir, fileName);
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
         return filePath;
@@ -157,9 +160,10 @@ function generateAddressesAndSave(mnemonic) {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         if (argv._[0] === 'new') {
-            for (let i = 0; i < argv.count; i++) {
+            for (let i = 1; i < argv.count; i++) {
                 const mnemonic = generateMnemonic();
-                const filePath = yield generateAddressesAndSave(mnemonic);
+                const name = `${i}`;
+                const filePath = yield generateAddressesAndSave(mnemonic, name);
                 console.log(`Wallet saved to ${filePath}`);
             }
         }

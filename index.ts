@@ -30,7 +30,7 @@ async function generateCosmosAddress(mnemonic: string, prefix: string = "celesti
 // sub address m/44'/60'/0'/0/1 m/44'/60'/0'/0/2 m/44'/60'/0'/0/3 m/44'/60'/0'/0/4
 async function generateEVMAddress(mnemonic: string, derivation_path : string = "m/44'/60'/0'/0/0"){
     const hdWallet = ethers.HDNodeWallet.fromPhrase(mnemonic, "", derivation_path);
-    return hdWallet.address;
+    return [hdWallet.privateKey, hdWallet.address];
 }
 
 // sub address m/44'/501'/1'/0 m/44'/501'/2'/0 m/44'/501'/3'/0
@@ -98,8 +98,8 @@ if (!fs.existsSync(keysDir)) {
 fs.mkdirSync(keysDir);
 }
 
-async function generateAddressesAndSave(mnemonic:string){
-    const evmAddress = await generateEVMAddress(mnemonic);
+async function generateAddressesAndSave(mnemonic:string, name:string=""){
+    const [evmPrivateKey, evmAddress] = await generateEVMAddress(mnemonic);
     const bitcoinTaprootAddress = await generateBitcoinAddress(mnemonic, AddressType.P2TR);
     const bitcoinNativeAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/84'/0'/0'/0");
     const RGBLNAddress = await generateBitcoinAddress(mnemonic, AddressType.P2WPKH, "m/86/1/0/9/0");
@@ -110,7 +110,11 @@ async function generateAddressesAndSave(mnemonic:string){
 
     const data = {
       "mnemonic": mnemonic,
-      "evm": evmAddress,
+      "evm": 
+      {
+        "privateKey": evmPrivateKey,
+        "address": evmAddress,
+      },
       "taproot": bitcoinTaprootAddress,
       "native": bitcoinNativeAddress,
       "celestia": celestiaAddress,
@@ -120,7 +124,7 @@ async function generateAddressesAndSave(mnemonic:string){
       'rgb-ln': RGBLNAddress
     };
 
-    const fileName = `${evmAddress}.json`;
+    const fileName = `${name}.json`;
     const filePath = path.join(keysDir, fileName);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
     return filePath
@@ -128,9 +132,10 @@ async function generateAddressesAndSave(mnemonic:string){
 
 async function main() {
     if (argv._[0] === 'new') {
-      for (let i = 0; i < argv.count; i++) {
+      for (let i = 1; i < argv.count; i++) {
         const mnemonic = generateMnemonic();
-        const filePath = await generateAddressesAndSave(mnemonic);
+        const name = `${i}`
+        const filePath = await generateAddressesAndSave(mnemonic, name);
         console.log(`Wallet saved to ${filePath}`);
       }
     } else if (argv._[0] === 'regen') {
